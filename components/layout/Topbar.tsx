@@ -1,15 +1,60 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { clearSession, getStoredUser, type AuthUser } from '@/lib/auth/session';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
 }
 
 export default function Topbar({ onToggleSidebar }: TopbarProps) {
+  const router = useRouter();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [user, setUser] = useState<AuthUser | null>(() =>
+    typeof window !== 'undefined' ? getStoredUser() : null,
+  );
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const syncUser = useCallback(() => {
+    setUser(getStoredUser());
+  }, []);
+
+  useEffect(() => {
+    syncUser();
+    window.addEventListener('cms-auth-changed', syncUser);
+    return () => window.removeEventListener('cms-auth-changed', syncUser);
+  }, [syncUser]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [menuOpen]);
+
+  const logout = () => {
+    setMenuOpen(false);
+    clearSession();
+    syncUser();
+    router.push('/login');
+    router.refresh();
+  };
+
+  const goLogin = () => {
+    setMenuOpen(false);
+    router.push('/login');
+  };
+
+  const initial = user ? user.username.slice(0, 1).toUpperCase() : 'A';
+
   return (
     <header className="topbar">
-      {/* ── Left ── */}
       <div className="topbar-left">
         <button
           id="sidebar-toggle-btn"
@@ -22,9 +67,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
         <span className="topbar-logo">Update Review</span>
       </div>
 
-      {/* ── Right ── */}
       <div className="topbar-right">
-        {/* Notification Bell */}
         <button id="topbar-notifications-btn" className="topbar-icon-btn" aria-label="Notifications">
           <div className="topbar-notif-dot" />
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -33,7 +76,6 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
           </svg>
         </button>
 
-        {/* Fullscreen */}
         <button id="topbar-fullscreen-btn" className="topbar-icon-btn" aria-label="Toggle fullscreen">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 3 21 3 21 9" />
@@ -43,7 +85,6 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
           </svg>
         </button>
 
-        {/* Settings */}
         <button id="topbar-settings-btn" className="topbar-icon-btn" aria-label="Settings">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
@@ -53,9 +94,47 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
 
         <div className="topbar-divider" />
 
-        {/* User Avatar */}
-        <div id="topbar-user-avatar" className="topbar-avatar" role="button" aria-label="User profile">
-          <div className="topbar-avatar-inner">A</div>
+        <div className="topbar-user-wrap" ref={wrapRef}>
+          <button
+            type="button"
+            id="topbar-user-avatar"
+            className="topbar-avatar"
+            aria-label={user ? 'Account menu' : 'Sign in'}
+            aria-expanded={menuOpen}
+            aria-haspopup="true"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <div className="topbar-avatar-inner">{initial}</div>
+          </button>
+
+          {menuOpen && (
+            <div className="topbar-user-dropdown" role="menu">
+              {user ? (
+                <>
+                  <div className="topbar-user-dropdown-meta">
+                    <div className="topbar-user-dropdown-name" title={user.username}>{user.username}</div>
+                    <div className="topbar-user-dropdown-role">{user.role}</div>
+                  </div>
+                  <button type="button" className="topbar-user-dropdown-item topbar-user-dropdown-item--danger" role="menuitem" onClick={logout}>
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="topbar-user-dropdown-meta">
+                    <div className="topbar-user-dropdown-name">Not signed in</div>
+                    <div className="topbar-user-dropdown-role">Admin portal</div>
+                  </div>
+                  <button type="button" className="topbar-user-dropdown-item" role="menuitem" onClick={goLogin}>
+                    Sign in
+                  </button>
+                  <Link href="/signup" className="topbar-user-dropdown-item" role="menuitem" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>
+                    Create account
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>

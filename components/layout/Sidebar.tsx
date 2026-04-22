@@ -35,7 +35,9 @@ export default function Sidebar({ isCollapsed, onOverlayClick }: SidebarProps) {
 
           <nav className="sidebar-nav" aria-label="Main navigation">
             {NAV_ITEMS.map((item) => {
-              const hasActiveChild = item.children?.some(c => pathname === c.href) || pathname.startsWith(item.href + '/');
+              const hasActiveChild =
+                item.children?.some((c: { href: string }) => pathname === c.href) ||
+                pathname.startsWith(`${item.href}/`);
               const isActive = pathname === item.href || (item.hasChildren && hasActiveChild);
               const isOpen = openMenus[item.id] !== undefined ? openMenus[item.id] : isActive;
 

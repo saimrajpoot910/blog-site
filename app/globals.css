@@ -260,6 +260,9 @@ ol {
   border: 2px solid rgba(255, 255, 255, 0.18);
   transition: border-color var(--transition);
   flex-shrink: 0;
+  padding: 0;
+  background: transparent;
+  display: block;
 }
 
 .topbar-avatar:hover {
@@ -277,6 +280,75 @@ ol {
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.topbar-user-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.topbar-user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  padding: 8px 0;
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.18);
+  z-index: 200;
+}
+
+.topbar-user-dropdown-meta {
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 4px;
+}
+
+.topbar-user-dropdown-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-user-dropdown-role {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  text-transform: capitalize;
+}
+
+.topbar-user-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.topbar-user-dropdown-item:hover {
+  background: rgba(109, 53, 227, 0.08);
+  color: var(--brand-primary);
+}
+
+.topbar-user-dropdown-item--danger {
+  color: #b91c1c;
+}
+
+.topbar-user-dropdown-item--danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
 }
 
 /* ============================================================
